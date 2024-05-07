@@ -20,6 +20,8 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'account_type',
+        'balance',
         'password',
     ];
 
@@ -41,4 +43,22 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected $appends = ['total_withdrawals_month', 'total_withdrawals'];
+
+    public function getTotalWithdrawalsMonthAttribute()
+    {
+        return $this->transactions()->where('transaction_type', 'withdrawal')
+            ->whereMonth('date', now()->month)->sum('amount');
+    }
+
+    public function getTotalWithdrawalsAttribute()
+    {
+        return $this->transactions()->where('transaction_type', 'withdrawal')->sum('amount');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }
